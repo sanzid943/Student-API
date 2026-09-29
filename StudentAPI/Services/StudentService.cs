@@ -37,7 +37,7 @@ public class StudentService : IStudentService
 
     public Student Add(Student student)
     {
-        int newId= _students.Count== 0 ? 1 : _students.Max(x=> x.Id) + 1;
+        int newId= _students.Count== 0 ? 1 : _students.Max(x=> x.id) + 1;
         
         student.id = newId;
         
