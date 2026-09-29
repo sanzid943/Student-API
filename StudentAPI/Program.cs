@@ -1,28 +1,59 @@
 using StudentAPI.Services;
-
-builder.Services.AddScoped<IStudentService, StudentService>();
-
+using StudentAPI.Middleware;
+using StudentAPI.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// controllers
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 
-var app = builder.Build();
+// auto mapper
 
-// Configure the HTTP request pipeline.
+builder.Services.AddAutoMapper(typeof(Program));
+
+// dependency injection
+builder.Services.AddScoped<IStudentService, StudentService>();
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy
+        .WithOrigins("http://localhost:3000")
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
+
+// swagger/ openAPI
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app= builder.Build();
+
+// swagger
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
+// custom middleware
+app.UseMiddleware<LoggingMiddleware>();
+
+//CORS
+app.UseCors("FrontendPolicy");
+
+// HTTPs
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-
+// controller
 app.MapControllers();
 
 app.Run();
+
+
