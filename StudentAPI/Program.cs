@@ -9,10 +9,13 @@ builder.Services.AddControllers();
 
 // auto mapper
 
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<StudentProfile>();
+});
 
 // dependency injection
-builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddSingleton<IStudentService, StudentService>();
 
 // CORS
 builder.Services.AddCors(options =>

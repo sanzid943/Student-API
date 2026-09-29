@@ -72,9 +72,4 @@ public class StudentService : IStudentService
 
         return true;
     }
-
-    public Student? GetStudent(int id)
-    {
-        throw new NotImplementedException();
-    }
 }

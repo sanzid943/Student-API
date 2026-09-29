@@ -10,10 +10,10 @@ public class Student
     public string name { get; set; } = "";
 
     [Range(10,100)]
-    [EmailAddress]
     public int age { get; set; }
     
     [Required]
+    [EmailAddress]
     public string email { get; set; } = "";
     
     [Required]
