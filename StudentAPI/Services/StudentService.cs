@@ -1,54 +1,37 @@
-﻿using StudentAPI.Models;
+﻿using StudentAPI.Data;
+using StudentAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace StudentAPI.Services;
 
 public class StudentService : IStudentService
 {
-    private readonly List<Student> _students = new()
+    private readonly AppDbContext _context;
+    public StudentService(AppDbContext context)
     {
-        new Student
-        {
-            id= 100,
-            name= "Rahim",
-            email= "rahim@gmail.com",
-            age= 20,
-            password= "12345"
-        },
-
-        new Student
-        {
-            id= 101,
-            name= "Karim",
-            email= "karim@gmail.com",
-            age= 25,
-            password= "abcdef"
-        }
-    };
-
-    public List<Student> GetAll()
-    {
-        return _students;
+        _context = context;
     }
 
-    public Student? GetById(int id)
+    public async Task<List<Student>> GetAllAsync()
     {
-        return _students.FirstOrDefault(x=> x.id == id);
+        return await _context.Students.ToListAsync();
     }
 
-    public Student Add(Student student)
+    public async Task<Student?> GetById(int id)
     {
-        int newId= _students.Count== 0 ? 1 : _students.Max(x=> x.id) + 1;
-        
-        student.id = newId;
-        
-        _students.Add(student);
-        
+        return await _context.Students.FirstOrDefaultAsync(s => s.id == id);
+    }
+
+    public async Task<Student> Add(Student student)
+    {
+        _context.Students.Add(student);
+        await _context.SaveChangesAsync();
         return student;
     }
 
-    public Student? Update(int id, Student student)
+    public async Task<Student?> Update(int id, Student student)
     {
-        var existingStudent = GetById(id);
+        var existingStudent = await GetById(id);
 
         if (existingStudent == null) 
             return null;
@@ -58,17 +41,19 @@ public class StudentService : IStudentService
         existingStudent.email = student.email;
         existingStudent.password = student.password;
 
+        await _context.SaveChangesAsync();
         return existingStudent;
     }
 
-    public bool Delete(int id)
+    public async Task<bool> Delete(int id)
     {
-        var student = GetById(id);
+        var student = await GetById(id);
 
         if (student == null) 
             return false;
 
-        _students.Remove(student);
+        _context.Students.Remove(student);
+        await _context.SaveChangesAsync();
 
         return true;
     }
