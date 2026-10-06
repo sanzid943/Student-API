@@ -12,7 +12,7 @@ public class StudentService : IStudentService
         _context = context;
     }
 
-    public async Task<List<Student>> GetAllAsync()
+    public async Task<List<Student>> GetAll()
     {
         return await _context.Students.ToListAsync();
     }
