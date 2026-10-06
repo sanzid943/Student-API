@@ -1,12 +1,21 @@
-using StudentAPI.Services;
-using StudentAPI.Middleware;
 using Microsoft.EntityFrameworkCore;
 using StudentAPI.Data;
+using StudentAPI.Mappings;
+using StudentAPI.Middleware;
+using StudentAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // controllers
 builder.Services.AddControllers();
+
+// auto mapper
+
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<StudentProfile>();
+});
+
 
 // database context
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -34,9 +43,6 @@ if (app.Environment.IsDevelopment())
 
 // custom middleware
 app.UseMiddleware<LoggingMiddleware>();
-
-//CORS
-app.UseCors("FrontendPolicy");
 
 // HTTPs
 app.UseHttpsRedirection();

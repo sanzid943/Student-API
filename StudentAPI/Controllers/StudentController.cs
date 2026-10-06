@@ -22,9 +22,9 @@ public class StudentController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        var students = _studentService.GetAll();
+        var students = await _studentService.GetAll();
 
         var result = _mapper.Map<List<StudentDto>>(students);
 
@@ -32,9 +32,9 @@ public class StudentController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
-        var student = _studentService.GetById(id);
+        var student = await _studentService.GetById(id);
 
         if (student == null)
             return NotFound();
@@ -45,9 +45,9 @@ public class StudentController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Add(Student student)
+    public async Task<IActionResult> Add(Student student)
     {
-        var result = _studentService.Add(student);
+        var result = await _studentService.Add(student);
 
         var dto = _mapper.Map<StudentDto>(result);
 
@@ -58,9 +58,9 @@ public class StudentController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update(int id, Student student)
+    public async Task<IActionResult> Update(int id, Student student)
     {
-        var result = _studentService.Update(id, student);
+        var result = await _studentService.Update(id, student);
 
         if (result == null)
             return NotFound();
@@ -71,9 +71,9 @@ public class StudentController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var result = _studentService.Delete(id);
+        var result = await _studentService.Delete(id);
 
         if (!result)
             return NotFound();
