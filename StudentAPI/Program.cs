@@ -1,33 +1,20 @@
 using StudentAPI.Services;
 using StudentAPI.Middleware;
-using StudentAPI.Mappings;
+using Microsoft.EntityFrameworkCore;
+using StudentAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // controllers
 builder.Services.AddControllers();
 
-// auto mapper
+// database context
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddAutoMapper(cfg =>
-{
-    cfg.AddProfile<StudentProfile>();
-});
 
 // dependency injection
-builder.Services.AddSingleton<IStudentService, StudentService>();
-
-// CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("FrontendPolicy", policy =>
-    {
-        policy
-        .WithOrigins("http://localhost:3000")
-        .AllowAnyHeader()
-        .AllowAnyMethod();
-    });
-});
+builder.Services.AddScoped<IStudentService, StudentService>();
 
 
 // swagger/ openAPI
