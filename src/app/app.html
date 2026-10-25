@@ -1,0 +1,113 @@
+<h1>Student Management</h1>
+
+<h2>Add New Student</h2>
+
+<form #studentForm="ngForm" (ngSubmit)="addStudent()">
+  <p>
+    <label>Name:</label>
+    <input
+      type="text"
+      name="name"
+      [(ngModel)]="form.name"
+      required
+    >
+  </p>
+
+  <p>
+    <label>Email:</label>
+    <input
+      type="email"
+      name="email"
+      [(ngModel)]="form.email"
+      required
+      email
+    >
+  </p>
+
+  <p>
+    <label>Age:</label>
+    <input
+      type="number"
+      name="age"
+      [(ngModel)]="form.age"
+      min="10"
+      max="100"
+      required
+    >
+  </p>
+
+  <p>
+    <label>Password:</label>
+    <input
+      type="password"
+      name="password"
+      [(ngModel)]="form.password"
+      minlength="6"
+      required
+    >
+  </p>
+
+<button type="submit" [disabled]="studentForm.invalid">
+  {{ editingId === null ? 'Add Student' : 'Update Student' }}
+</button>
+<br>
+<br>
+
+<button
+  *ngIf="editingId !== null"
+  type="button"
+  (click)="editingId = null; form = {
+    name: '',
+    email: '',
+    age: 18,
+    password: ''
+  }"
+>
+  Cancel Edit
+</button>
+
+</form>
+
+<p>{{ message }}</p>
+
+<hr>
+
+<h2>Student List</h2>
+
+<button type="button" (click)="loadStudents()">
+  Refresh
+</button>
+
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Age</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr *ngFor="let student of students">
+      <td>{{ student.id }}</td>
+      <td>{{ student.name }}</td>
+      <td>{{ student.email }}</td>
+      <td>{{ student.age }}</td>
+      <td>
+  <button
+    type="button"
+    (click)="editStudent(student)">
+    Edit
+  </button>
+
+  <button
+    type="button"
+    (click)="deleteStudent(student.id)">
+    Delete
+  </button>
+</td>
+    </tr>
+  </tbody>
+</table>
