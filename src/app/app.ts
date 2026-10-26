@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,21 +12,21 @@ import { Student, CreateStudent } from './student';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-
 export class App implements OnInit {
-
   students: Student[] = [];
-
   editingId: number | null = null;
 
-  form: CreateStudent = {
-    name: '',
-    email: '',
-    age: 18,
-    password: ''
-  };
-
   message = '';
+  messageType: 'success' | 'error' | 'info' = 'info';
+
+  isDarkMode = false;
+  isLoading = false;
+
+  searchText = '';
+  ageFilter = 'all';
+  sortBy = 'idAsc';
+
+  form: CreateStudent = this.emptyForm();
 
   constructor(private studentService: StudentService) {}
 
@@ -33,76 +34,230 @@ export class App implements OnInit {
     this.loadStudents();
   }
 
+  emptyForm(): CreateStudent {
+    return {
+      name: '',
+      email: '',
+      age: 18,
+      password: ''
+    };
+  }
+
+  get totalStudents(): number {
+    return this.students.length;
+  }
+
+  get averageAge(): number {
+    if (this.students.length === 0) return 0;
+
+    const total = this.students.reduce(
+      (sum, student) => sum + Number(student.age),
+      0
+    );
+
+    return Math.round(total / this.students.length);
+  }
+
+  get filteredStudents(): Student[] {
+    const search = this.searchText.trim().toLowerCase();
+
+    let result = this.students.filter(student => {
+      const matchesSearch =
+        student.name.toLowerCase().includes(search) ||
+        student.email.toLowerCase().includes(search) ||
+        String(student.id).includes(search);
+
+      const age = Number(student.age);
+
+      const matchesAge =
+        this.ageFilter === 'all' ||
+        (this.ageFilter === 'under18' && age < 18) ||
+        (this.ageFilter === '18plus' && age >= 18);
+
+      return matchesSearch && matchesAge;
+    });
+
+    result = [...result];
+
+    switch (this.sortBy) {
+      case 'nameAsc':
+        result.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'nameDesc':
+        result.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'ageAsc':
+        result.sort((a, b) => a.age - b.age);
+        break;
+      case 'ageDesc':
+        result.sort((a, b) => b.age - a.age);
+        break;
+      case 'idDesc':
+        result.sort((a, b) => b.id - a.id);
+        break;
+      default:
+        result.sort((a, b) => a.id - b.id);
+    }
+
+    return result;
+  }
+
   loadStudents(): void {
+    this.isLoading = true;
+
     this.studentService.getStudents().subscribe({
-      next: (data) => {
+      next: data => {
         this.students = data;
+        this.isLoading = false;
       },
-      error: (error) => {
+      error: error => {
         console.error(error);
-        this.message =
-          'Student Data could not Load. Check Backend/API URL';
+        this.isLoading = false;
+        this.showMessage(
+          'Student data load হয়নি। Backend/API URL check করো।',
+          'error'
+        );
       }
     });
   }
 
   editStudent(student: Student): void {
-  this.editingId = student.id;
+    this.editingId = student.id;
 
-  this.form = {
-    name: student.name,
-    email: student.email,
-    age: student.age,
-    password: ''
-  };
-}
+    this.form = {
+      name: student.name,
+      email: student.email,
+      age: student.age,
+      password: ''
+    };
 
-addStudent(): void {
-  const request$ = this.editingId === null
-    ? this.studentService.addStudent(this.form)
-    : this.studentService.updateStudent(
-        this.editingId,
-        this.form
-      );
+    this.showMessage(
+      'Student information edit করো। Update করার আগে password দাও।',
+      'info'
+    );
+  }
 
-  request$.subscribe({
-    next: () => {
-      this.message = this.editingId === null
-        ? 'Student added!'
-        : 'Student updated!';
+  cancelEdit(): void {
+    this.editingId = null;
+    this.form = this.emptyForm();
+    this.showMessage('Edit cancel করা হয়েছে।', 'info');
+  }
 
-      this.editingId = null;
+  addStudent(): void {
+    const name = this.form.name.trim();
+    const email = this.form.email.trim();
+    const password = this.form.password;
 
-      this.form = {
-        name: '',
-        email: '',
-        age: 18,
-        password: ''
-      };
-
-      this.loadStudents();
-    },
-    error: (error) => {
-      console.error(error);
-      this.message = 'Operation failed';
-    }
-  });
-}
-
-  deleteStudent(id: number): void {
-    if (!confirm('Do you want to delete this student?')) {
+    if (name.length < 2) {
+      this.showMessage('Name কমপক্ষে 2 characters হতে হবে।', 'error');
       return;
     }
 
-    this.studentService.deleteStudent(id).subscribe({
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.showMessage('সঠিক email address দাও।', 'error');
+      return;
+    }
+
+    const age = Number(this.form.age);
+
+    if (!Number.isInteger(age) || age < 10 || age > 100) {
+      this.showMessage('Age 10 থেকে 100-এর মধ্যে পূর্ণসংখ্যা হতে হবে।', 'error');
+      return;
+    }
+
+    if (password.length < 6) {
+      this.showMessage('Password কমপক্ষে 6 characters হতে হবে।', 'error');
+      return;
+    }
+
+    const duplicateEmail = this.students.some(student =>
+      student.email.toLowerCase() === email.toLowerCase() &&
+      student.id !== this.editingId
+    );
+
+    if (duplicateEmail) {
+      this.showMessage('এই email দিয়ে student আগে থেকেই আছে।', 'error');
+      return;
+    }
+
+    const requestData: CreateStudent = {
+      name,
+      email,
+      age,
+      password
+    };
+
+    const wasEditing = this.editingId !== null;
+    const request$ = wasEditing
+      ? this.studentService.updateStudent(this.editingId!, requestData)
+      : this.studentService.addStudent(requestData);
+
+    request$.subscribe({
       next: () => {
-        this.message = 'Student deleted!';
+        this.showMessage(
+          wasEditing ? 'Student updated successfully!' : 'Student added successfully!',
+          'success'
+        );
+
+        this.editingId = null;
+        this.form = this.emptyForm();
         this.loadStudents();
       },
-      error: (error) => {
+      error: error => {
         console.error(error);
-        this.message = 'Delete failed';
+
+        const serverMessage =
+          typeof error?.error === 'string'
+            ? error.error
+            : error?.error?.message;
+
+        this.showMessage(
+          serverMessage || 'Operation failed. Backend/API check করো।',
+          'error'
+        );
       }
     });
+  }
+
+  deleteStudent(id: number): void {
+    if (!confirm('Do you want to delete this student?')) return;
+
+    this.studentService.deleteStudent(id).subscribe({
+      next: () => {
+        this.students = this.students.filter(student => student.id !== id);
+        this.showMessage('Student deleted successfully!', 'success');
+      },
+      error: error => {
+        console.error(error);
+        this.showMessage('Student delete করা যায়নি।', 'error');
+      }
+    });
+  }
+
+  showMessage(
+    text: string,
+    type: 'success' | 'error' | 'info'
+  ): void {
+    this.message = text;
+    this.messageType = type;
+  }
+
+  clearMessage(): void {
+    this.message = '';
+  }
+
+  clearFilters(): void {
+    this.searchText = '';
+    this.ageFilter = 'all';
+    this.sortBy = 'idAsc';
+  }
+
+  refreshStudents(): void {
+    this.clearFilters();
+    this.loadStudents();
+  }
+
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
   }
 }
