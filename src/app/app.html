@@ -91,7 +91,7 @@
               maxlength="100"
             />
             <small class="field-error" *ngIf="nameInput.invalid && nameInput.touched">
-              Name কমপক্ষে 2 characters হতে হবে।
+              Name must be at least 2 characters.
             </small>
           </div>
 
@@ -108,7 +108,7 @@
               email
             />
             <small class="field-error" *ngIf="emailInput.invalid && emailInput.touched">
-              সঠিক email address দাও।
+              Please enter a valid email address.
             </small>
           </div>
 
@@ -126,7 +126,7 @@
               required
             />
             <small class="field-error" *ngIf="ageInput.invalid && ageInput.touched">
-              Age 10–100-এর মধ্যে হতে হবে।
+              Age must be between 10 and 100.
             </small>
           </div>
 
@@ -143,10 +143,10 @@
               required
             />
             <small class="field-error" *ngIf="passwordInput.invalid && passwordInput.touched">
-              Password কমপক্ষে 6 characters হতে হবে।
+              The password must be at least 6 characters long.
             </small>
             <small class="field-hint" *ngIf="editingId !== null">
-              Update করার সময় নতুন password দাও।
+              Please enter a new password.
             </small>
           </div>
 
@@ -253,7 +253,7 @@
               <td colspan="5" class="empty-state">
                 <div class="empty-icon">🔍</div>
                 <strong>No students found</strong>
-                <p>Search বা filter পরিবর্তন করে দেখো।</p>
+                <p>No results found. Try changing your search or filters.</p>
                 <button type="button" class="secondary-btn" (click)="clearFilters()">
                   Clear Filters
                 </button>

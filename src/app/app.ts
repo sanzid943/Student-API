@@ -114,7 +114,7 @@ export class App implements OnInit {
         console.error(error);
         this.isLoading = false;
         this.showMessage(
-          'Student data load হয়নি। Backend/API URL check করো।',
+          'Failed to load student data. Please check the backend/API URL.',
           'error'
         );
       }
@@ -132,7 +132,7 @@ export class App implements OnInit {
     };
 
     this.showMessage(
-      'Student information edit করো। Update করার আগে password দাও।',
+      'Edit student information. Please enter your password before updating.',
       'info'
     );
   }
@@ -140,7 +140,7 @@ export class App implements OnInit {
   cancelEdit(): void {
     this.editingId = null;
     this.form = this.emptyForm();
-    this.showMessage('Edit cancel করা হয়েছে।', 'info');
+    this.showMessage('Edit cancelled.', 'info');
   }
 
   addStudent(): void {
@@ -149,24 +149,24 @@ export class App implements OnInit {
     const password = this.form.password;
 
     if (name.length < 2) {
-      this.showMessage('Name কমপক্ষে 2 characters হতে হবে।', 'error');
+      this.showMessage('Name must be at least 2 characters.', 'error');
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      this.showMessage('সঠিক email address দাও।', 'error');
+      this.showMessage('Please enter a valid email address.', 'error');
       return;
     }
 
     const age = Number(this.form.age);
 
     if (!Number.isInteger(age) || age < 10 || age > 100) {
-      this.showMessage('Age 10 থেকে 100-এর মধ্যে পূর্ণসংখ্যা হতে হবে।', 'error');
+      this.showMessage('Age must be an integer between 10 and 100.', 'error');
       return;
     }
 
     if (password.length < 6) {
-      this.showMessage('Password কমপক্ষে 6 characters হতে হবে।', 'error');
+      this.showMessage('Password must be at least 6 characters long.', 'error');
       return;
     }
 
@@ -176,7 +176,7 @@ export class App implements OnInit {
     );
 
     if (duplicateEmail) {
-      this.showMessage('এই email দিয়ে student আগে থেকেই আছে।', 'error');
+      this.showMessage('A student with this email already exists.', 'error');
       return;
     }
 
@@ -212,7 +212,7 @@ export class App implements OnInit {
             : error?.error?.message;
 
         this.showMessage(
-          serverMessage || 'Operation failed. Backend/API check করো।',
+          serverMessage || 'Operation failed. Please check the backend/API.',
           'error'
         );
       }
@@ -229,7 +229,7 @@ export class App implements OnInit {
       },
       error: error => {
         console.error(error);
-        this.showMessage('Student delete করা যায়নি।', 'error');
+        this.showMessage('Failed to delete student.', 'error');
       }
     });
   }
