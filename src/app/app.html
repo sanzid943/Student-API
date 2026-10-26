@@ -1,113 +1,279 @@
-<h1>Student Management</h1>
 
-<h2>Add New Student</h2>
+<div class="app-container" [class.dark-mode]="isDarkMode">
 
-<form #studentForm="ngForm" (ngSubmit)="addStudent()">
-  <p>
-    <label>Name:</label>
-    <input
-      type="text"
-      name="name"
-      [(ngModel)]="form.name"
-      required
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🎓</div>
+      <div>
+        <h1>Student Portal</h1>
+        <p>Student Management Dashboard</p>
+      </div>
+    </div>
+
+    <button class="theme-btn" type="button" (click)="toggleTheme()">
+      {{ isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode' }}
+    </button>
+  </header>
+
+  <main>
+    <section class="welcome-section">
+      <div>
+        <p class="eyebrow">DASHBOARD OVERVIEW</p>
+        <h2>Student Management</h2>
+        <p class="subtitle">Manage, search and organize student records.</p>
+      </div>
+      <div class="welcome-icon">📚</div>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon purple">👨‍🎓</div>
+        <div>
+          <p>Total Students</p>
+          <h3>{{ totalStudents }}</h3>
+          <span>All registered students</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon blue">🔎</div>
+        <div>
+          <p>Search Results</p>
+          <h3>{{ filteredStudents.length }}</h3>
+          <span>Students matching filters</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon green">📊</div>
+        <div>
+          <p>Average Age</p>
+          <h3>{{ averageAge }}</h3>
+          <span>Years, across all students</span>
+        </div>
+      </div>
+    </section>
+
+    <div
+      *ngIf="message"
+      class="notification"
+      [ngClass]="'notification-' + messageType"
+      role="status"
+      aria-live="polite"
     >
-  </p>
+      <span>{{ message }}</span>
+      <button type="button" class="close-notice" (click)="clearMessage()">×</button>
+    </div>
 
-  <p>
-    <label>Email:</label>
-    <input
-      type="email"
-      name="email"
-      [(ngModel)]="form.email"
-      required
-      email
-    >
-  </p>
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <h2>{{ editingId === null ? 'Add New Student' : 'Edit Student' }}</h2>
+          <p>Enter the student's information below.</p>
+        </div>
+        <span class="heading-icon">✚</span>
+      </div>
 
-  <p>
-    <label>Age:</label>
-    <input
-      type="number"
-      name="age"
-      [(ngModel)]="form.age"
-      min="10"
-      max="100"
-      required
-    >
-  </p>
+      <form #studentForm="ngForm" (ngSubmit)="addStudent()" novalidate>
+        <div class="form-grid">
 
-  <p>
-    <label>Password:</label>
-    <input
-      type="password"
-      name="password"
-      [(ngModel)]="form.password"
-      minlength="6"
-      required
-    >
-  </p>
+          <div class="form-field">
+            <label for="studentName">Full Name</label>
+            <input
+              id="studentName"
+              type="text"
+              name="name"
+              [(ngModel)]="form.name"
+              #nameInput="ngModel"
+              placeholder="Enter full name"
+              required
+              minlength="2"
+              maxlength="100"
+            />
+            <small class="field-error" *ngIf="nameInput.invalid && nameInput.touched">
+              Name কমপক্ষে 2 characters হতে হবে।
+            </small>
+          </div>
 
-<button type="submit" [disabled]="studentForm.invalid">
-  {{ editingId === null ? 'Add Student' : 'Update Student' }}
-</button>
-<br>
-<br>
+          <div class="form-field">
+            <label for="studentEmail">Email Address</label>
+            <input
+              id="studentEmail"
+              type="email"
+              name="email"
+              [(ngModel)]="form.email"
+              #emailInput="ngModel"
+              placeholder="student@example.com"
+              required
+              email
+            />
+            <small class="field-error" *ngIf="emailInput.invalid && emailInput.touched">
+              সঠিক email address দাও।
+            </small>
+          </div>
 
-<button
-  *ngIf="editingId !== null"
-  type="button"
-  (click)="editingId = null; form = {
-    name: '',
-    email: '',
-    age: 18,
-    password: ''
-  }"
->
-  Cancel Edit
-</button>
+          <div class="form-field">
+            <label for="studentAge">Age</label>
+            <input
+              id="studentAge"
+              type="number"
+              name="age"
+              [(ngModel)]="form.age"
+              #ageInput="ngModel"
+              min="10"
+              max="100"
+              step="1"
+              required
+            />
+            <small class="field-error" *ngIf="ageInput.invalid && ageInput.touched">
+              Age 10–100-এর মধ্যে হতে হবে।
+            </small>
+          </div>
 
-</form>
+          <div class="form-field">
+            <label for="studentPassword">Password</label>
+            <input
+              id="studentPassword"
+              type="password"
+              name="password"
+              [(ngModel)]="form.password"
+              #passwordInput="ngModel"
+              placeholder="At least 6 characters"
+              minlength="6"
+              required
+            />
+            <small class="field-error" *ngIf="passwordInput.invalid && passwordInput.touched">
+              Password কমপক্ষে 6 characters হতে হবে।
+            </small>
+            <small class="field-hint" *ngIf="editingId !== null">
+              Update করার সময় নতুন password দাও।
+            </small>
+          </div>
 
-<p>{{ message }}</p>
+        </div>
 
-<hr>
+        <div class="form-actions">
+          <button class="primary-btn" type="submit" [disabled]="studentForm.invalid">
+            {{ editingId === null ? '＋ Add Student' : '✓ Update Student' }}
+          </button>
 
-<h2>Student List</h2>
+          <button
+            class="secondary-btn"
+            type="button"
+            (click)="studentForm.resetForm(emptyForm()); editingId = null"
+          >
+            {{ editingId === null ? 'Clear Form' : 'Cancel Edit' }}
+          </button>
+        </div>
+      </form>
+    </section>
 
-<button type="button" (click)="loadStudents()">
-  Refresh
-</button>
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <h2>Student Directory</h2>
+          <p>Search, filter, sort, edit and delete student records.</p>
+        </div>
+        <span class="result-count">{{ filteredStudents.length }} results</span>
+      </div>
 
-<table border="1" cellpadding="8">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Age</th>
-      <th>Action</th>
-    </tr>
-  </thead>
+      <div class="toolbar">
+        <div class="search-box">
+          <span>⌕</span>
+          <input
+            type="search"
+            name="searchText"
+            [(ngModel)]="searchText"
+            placeholder="Search by name, email or ID..."
+            aria-label="Search students"
+          />
+          <button
+            *ngIf="searchText"
+            type="button"
+            class="clear-search"
+            (click)="searchText = ''"
+            aria-label="Clear search"
+          >×</button>
+        </div>
 
-  <tbody>
-    <tr *ngFor="let student of students">
-      <td>{{ student.id }}</td>
-      <td>{{ student.name }}</td>
-      <td>{{ student.email }}</td>
-      <td>{{ student.age }}</td>
-      <td>
-  <button
-    type="button"
-    (click)="editStudent(student)">
-    Edit
-  </button>
+        <select name="ageFilter" [(ngModel)]="ageFilter" aria-label="Filter by age">
+          <option value="all">All Ages</option>
+          <option value="under18">Under 18</option>
+          <option value="18plus">18 and above</option>
+        </select>
 
-  <button
-    type="button"
-    (click)="deleteStudent(student.id)">
-    Delete
-  </button>
-</td>
-    </tr>
-  </tbody>
-</table>
+        <select name="sortBy" [(ngModel)]="sortBy" aria-label="Sort students">
+          <option value="idAsc">ID: Low to High</option>
+          <option value="idDesc">ID: High to Low</option>
+          <option value="nameAsc">Name: A to Z</option>
+          <option value="nameDesc">Name: Z to A</option>
+          <option value="ageAsc">Age: Youngest First</option>
+          <option value="ageDesc">Age: Oldest First</option>
+        </select>
+
+        <button type="button" class="secondary-btn refresh-btn" (click)="refreshStudents()">
+          ↻ Refresh
+        </button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Student</th>
+              <th>Email Address</th>
+              <th>Age</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let student of filteredStudents">
+              <td><span class="id-badge">#{{ student.id }}</span></td>
+              <td>
+                <div class="student-cell">
+                  <div class="avatar">{{ student.name.charAt(0).toUpperCase() }}</div>
+                  <strong>{{ student.name }}</strong>
+                </div>
+              </td>
+              <td>{{ student.email }}</td>
+              <td><span class="age-badge">{{ student.age }} years</span></td>
+              <td class="actions-cell">
+                <button type="button" class="edit-btn" (click)="editStudent(student)">
+                  Edit
+                </button>
+                <button type="button" class="delete-btn" (click)="deleteStudent(student.id)">
+                  Delete
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="!isLoading && filteredStudents.length === 0">
+              <td colspan="5" class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <strong>No students found</strong>
+                <p>Search বা filter পরিবর্তন করে দেখো।</p>
+                <button type="button" class="secondary-btn" (click)="clearFilters()">
+                  Clear Filters
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="isLoading">
+              <td colspan="5" class="empty-state">Loading students...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        Showing {{ filteredStudents.length }} of {{ totalStudents }} students
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      Student Management System · Angular + ASP.NET Core API
+    </footer>
+  </main>
+</div>
